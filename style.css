@@ -20,3 +20,10 @@
 .remove-file:active:enabled{transform:scale(.9)}
 @keyframes file-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.uploaded-file{animation:none}.remove-file{transition:none}.remove-file:hover:enabled{transform:none}}
+
+/* Download button feedback */
+.batch button,#download-all{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,border-color .18s ease}
+.batch button:hover:enabled{transform:translateY(-2px);background:#edf7f2;border-color:#4b917b;box-shadow:0 4px 10px #215d4f24}
+#download-all:hover:enabled{transform:translateY(-2px);box-shadow:0 5px 14px #215d4f30}
+.batch button:active:enabled,#download-all:active:enabled{transform:translateY(0);box-shadow:none}
+@media(prefers-reduced-motion:reduce){.batch button,#download-all{transition:none}.batch button:hover:enabled,#download-all:hover:enabled{transform:none}}
