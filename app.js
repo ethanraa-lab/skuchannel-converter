@@ -23,17 +23,20 @@ for(const id of ['channel','country']) $(id).addEventListener('change',()=>{upda
 function renderUploads(){
   $('file-name').textContent=uploads.length ? uploads.length+' file(s) selected' : 'No file selected';
   $('file-list').replaceChildren(...uploads.map((item,index)=>{
+    const group=document.createElement('div');group.className='upload-group';
     const row=document.createElement('div');row.className='uploaded-file';
     const info=document.createElement('div');info.className='file-info';
     const name=document.createElement('strong');name.textContent=item.file.name;info.append(name);
+    group.append(row);
     if(item.workbook.sheets.length>1){
+      const worksheet=document.createElement('div');worksheet.className='worksheet-box';
       const label=document.createElement('label');label.textContent='Worksheet';
       const select=document.createElement('select');select.className='file-sheet';select.id='file-sheet-'+index;
       label.htmlFor=select.id;
       select.replaceChildren(...item.workbook.sheets.map((sheet,i)=>new Option(sheet.name.trim().toLowerCase()==='template'?'SKUChannel Template':sheet.name,String(i))));
       select.value=String(item.sheet);
       select.addEventListener('change',()=>{item.sheet=Number(select.value);reset();});
-      info.append(label,select);
+      worksheet.append(label,select);group.append(worksheet);
     }
     const remove=document.createElement('button');remove.type='button';remove.className='remove-file';
     remove.textContent='×';remove.setAttribute('aria-label','Remove '+item.file.name);remove.title='Remove file';
@@ -41,7 +44,7 @@ function renderUploads(){
       if(busy)return;
       uploads.splice(index,1);$('file').value='';reset();renderUploads();setBusy(false);
     });
-    row.append(info,remove);return row;
+    row.append(info,remove);return group;
   }));
 }
 $('file').addEventListener('change',async()=>{
