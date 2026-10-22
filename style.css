@@ -9,3 +9,12 @@
 .country-option input:focus-visible+span{outline:3px solid #77b7a8;outline-offset:3px}
 .country-choice:disabled{opacity:.45}
 .country-choice:disabled label{cursor:not-allowed}
+
+.uploaded-file{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e0e5e9;border-radius:9px;margin-bottom:10px;animation:file-enter .2s ease-out}
+.file-info{flex:1;min-width:0}.file-info strong{display:block;font-size:12px;overflow-wrap:anywhere}
+.file-info label{margin-top:12px}.file-info select{margin-bottom:0}
+.remove-file{flex-shrink:0;border:1px solid #f1c3c3;border-radius:8px;background:#fff0f0;color:#c83232;width:36px;height:36px;font-size:25px;line-height:1;cursor:pointer;transition:transform .18s,background .18s,color .18s}
+.remove-file:hover:enabled{background:#c83232;color:#fff;transform:rotate(90deg) scale(1.08)}
+.remove-file:active:enabled{transform:scale(.9)}
+@keyframes file-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.uploaded-file{animation:none}.remove-file{transition:none}.remove-file:hover:enabled{transform:none}}
