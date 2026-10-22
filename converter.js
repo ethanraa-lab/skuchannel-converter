@@ -147,16 +147,42 @@
     const data=source.match(/<sheetData[^>]*>([\s\S]*?)<\/sheetData>/);
     const headers=data?.[1].match(/<row\b[^>]*r="[12]"[^>]*>[\s\S]*?<\/row>/g);
     if (!headers || headers.length!==2) throw new Error('The bundled template is invalid.');
+    // Match the original template's shared-string storage for eRetail readers.
+    // Append entries so all existing header/support-sheet indexes remain valid.
+    const sharedPath='xl/sharedStrings.xml';
+    const sharedFile=zip.file(sharedPath);
+    if (!sharedFile) throw new Error('The bundled template is missing its shared string table.');
+    const sharedSource=await sharedFile.async('string');
+    const existingCount=(sharedSource.match(/<si\b/g)||[]).length;
+    const added=[], indexes=new Map();
+    function sharedIndex(value) {
+      const text=String(value);
+      if (!indexes.has(text)) {
+        indexes.set(text,existingCount+added.length);
+        added.push('<si><t xml:space="preserve">'+escapeXml(text)+'</t></si>');
+      }
+      return indexes.get(text);
+    }
     const output=records.map((record,i)=>{
       if (record.length!==10) throw new Error('Invalid output column count.');
       const r=i+3;
       return `<row r="${r}" spans="1:10">`+record.map((value,j)=>{
         const ref=String.fromCharCode(65+j)+r;
-        // Inline strings preserve identifiers and ensure values beginning '=' are never formulas.
-        return value==='' ? `<c r="${ref}"/>` : `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(value)}</t></is></c>`;
+        // Text identifiers retain leading zeros; formula-like SKUs remain plain text.
+        return value==='' ? `<c r="${ref}"/>` : `<c r="${ref}" t="s"><v>${sharedIndex(value)}</v></c>`;
       }).join('')+'</row>';
     }).join('');
     zip.file(path,source.replace(data[0],'<sheetData>'+headers.join('')+output+'</sheetData>').replace(/<dimension ref="[^"]*"\s*\/>/,`<dimension ref="A1:J${records.length+2}"/>`));
+    let references=0;
+    for (const entry of Object.values(zip.files)) {
+      if (!entry.dir && /^xl\/worksheets\/[^/]+\.xml$/.test(entry.name)) {
+        references+=((await entry.async('string')).match(/<c\b[^>]*\bt="s"/g)||[]).length;
+      }
+    }
+    zip.file(sharedPath,sharedSource.replace(/<sst\b[^>]*>/,tag=>tag
+      .replace(/\s+count="[^"]*"/,'').replace(/\s+uniqueCount="[^"]*"/,'')
+      .replace(/>$/,` count="${references}" uniqueCount="${existingCount+added.length}">`))
+      .replace('</sst>',added.join('')+'</sst>'));
     return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
   }
   root.SkuConverter={CHANNELS,HEADERS,LIMIT,openWorkbook,convert,batches,exportBatch};
