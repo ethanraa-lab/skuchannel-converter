@@ -53,15 +53,18 @@ async function main(){
       check((sheet.match(/<row\b/g)||[]).length===batch.records.length+2,'export row limit');
       assert.deepEqual(headerRows(sheet),headerRows(baseSheet));
       check(sheet.includes(`A1:J${batch.records.length+2}`),'used range');
-      for(const [name,entry]of Object.entries(base.files))if(!entry.dir&&name!=='xl/worksheets/sheet1.xml')assert.deepEqual(await out.file(name).async('uint8array'),await entry.async('uint8array'),'unchanged template part '+name);
+      for(const [name,entry]of Object.entries(base.files))if(!entry.dir&&name!=='xl/worksheets/sheet1.xml'&&name!=='xl/sharedStrings.xml')assert.deepEqual(await out.file(name).async('uint8array'),await entry.async('uint8array'),'unchanged template part '+name);
       // Independently parse exported XML with Python's XML parser.
-      const summary=JSON.parse(execFileSync('python3',['-c',"import sys,json,xml.etree.ElementTree as E;r=E.fromstring(sys.stdin.read());n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'};rows=r.findall('m:sheetData/m:row',n);print(json.dumps({'count':len(rows),'first':rows[2].findall('m:c',n)[1].find('m:is/m:t',n).text,'last':rows[-1].findall('m:c',n)[1].find('m:is/m:t',n).text}))"],{input:sheet,encoding:'utf8'}));
+      const strings=await out.file('xl/sharedStrings.xml').async('string');
+      const summary=JSON.parse(execFileSync('python3',['-c',"import sys,json,xml.etree.ElementTree as E;data=json.loads(sys.stdin.read());r=E.fromstring(data['sheet']);n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'};ss=[''.join(i.itertext()) for i in E.fromstring(data['strings'])];rows=r.findall('m:sheetData/m:row',n);print(json.dumps({'count':len(rows),'first':ss[int(rows[2].findall('m:c',n)[1].find('m:v',n).text)],'last':ss[int(rows[-1].findall('m:c',n)[1].find('m:v',n).text)]}))"],{input:JSON.stringify({sheet,strings}),encoding:'utf8'}));
       check(summary.count===batch.records.length+2&&summary.first===batch.records[0][1]&&summary.last===batch.records.at(-1)[1],'independent XML parse / first and last row');
     }
   }
   const escaped=await JSZip.loadAsync(await C.exportBatch(template,[['M02','=VALUE<&"','00123','1~2','','','','','Active','Create']]));
   const escapedSheet=await escaped.file('xl/worksheets/sheet1.xml').async('string');
-  check(escapedSheet.includes('=VALUE&lt;&amp;&quot;')&&!escapedSheet.includes('<f>'),'XML escaping and formula-like text');
+  const escapedStrings=await escaped.file('xl/sharedStrings.xml').async('string');
+  check(escapedStrings.includes('=VALUE&lt;&amp;&quot;')&&!escapedSheet.includes('<f>'),'XML escaping and formula-like text');
+  check(!escapedSheet.includes('inlineStr')&&/<c r="A3" t="s"><v>\d+<\/v><\/c>/.test(escapedSheet),'A3 uses template-compatible shared string');
   const sampleDir=process.env.SAMPLE_DIR;
   if(sampleDir){
     for(const [market,brand,count,blank]of [['Shopee','Vans',5,1],['Lazada','Vans',6,0],['Zalora','Timberland',12,0]]){
