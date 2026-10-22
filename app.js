@@ -28,7 +28,7 @@ $('file').addEventListener('change',async()=>{
     if(file.size>30*1024*1024)throw new Error('File exceeds 30 MB. Export a smaller file.');
     workbook=await converter.openWorkbook(await file.arrayBuffer());
     if(version!==loadVersion)return;
-    $('sheet').replaceChildren(...workbook.sheets.map((sheet,i)=>new Option(sheet.name,String(i))));
+    $('sheet').replaceChildren(...workbook.sheets.map((sheet,i)=>new Option(sheet.name.trim().toLowerCase()==='template'?'SKUChannel Template':sheet.name,String(i))));
     $('sheet-container').hidden=workbook.sheets.length<2;message('Workbook ready. Check the channel selection, then convert.');
   }catch(error){workbook=null;message(error.message,true);}finally{if(version===loadVersion)setBusy(false);}
 });
