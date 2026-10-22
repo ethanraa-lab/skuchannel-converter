@@ -13,8 +13,11 @@
   <div class="layout">
     <section class="card setup" aria-labelledby="setup-title">
       <div class="section-title"><span class="step">1</span><h2 id="setup-title">Choose your channel</h2></div>
-      <label for="marketplace">Marketplace</label><select id="marketplace"><option>Shopee</option><option>Lazada</option><option>Zalora</option></select>
-      <div class="pair"><div><label for="country">Country</label><select id="country"><option value="MY">Malaysia · MY</option><option value="SG">Singapore · SG</option></select></div><div><label for="brand">Brand</label><select id="brand"></select></div></div>
+      <label for="channel">Marketplace & brand</label><select id="channel"></select>
+      <fieldset id="country" class="country-choice"><legend>Country</legend>
+        <label class="country-option"><input type="radio" name="country" value="MY" checked><span>Malaysia MY</span></label>
+        <label class="country-option"><input type="radio" name="country" value="SG"><span>Singapore SG</span></label>
+      </fieldset>
       <div class="channel"><span>ChannelCode</span><strong id="channel-code"></strong></div>
       <div class="section-title second"><span class="step">2</span><h2>Upload marketplace export</h2></div>
       <label class="upload" for="file"><span class="upload-icon">↥</span><strong>Choose an Excel file</strong><span>.xlsx or .xls in modern Excel format · up to 30 MB</span><input id="file" type="file" accept=".xlsx,.xls"></label>
