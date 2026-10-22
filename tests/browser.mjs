@@ -91,7 +91,7 @@ try{
     }
   }
   const bytes=await fixture([['Product ID','Variation ID','SKU'],['123','456','001SKU'],['123','789','']]);
-  await page.selectOption('#brand','Vans');
+  await page.selectOption('#channel','M02');
   await page.setInputFiles('#file',{name:'synthetic.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:bytes});
   await page.waitForFunction(()=>!document.getElementById('convert').disabled);
   await page.click('#convert');await page.waitForSelector('#results:not([hidden])');
@@ -104,7 +104,7 @@ try{
   const zipBytes=await readFile(await zipDownload.path());const zip=await JSZip.loadAsync(zipBytes);
   check(Object.keys(zip.files).length===1&&!!zip.file(download.suggestedFilename()),'ZIP contains complete batch');
   await page.waitForFunction(()=>!document.getElementById('country').disabled);
-  await page.selectOption('#country','SG');check(await page.locator('#results').isHidden(),'selection change invalidates old results');
+  await page.check('input[name="country"][value="SG"]');check(await page.locator('#results').isHidden(),'selection change invalidates old results');
   await page.click('#convert');await page.waitForSelector('#results:not([hidden])');
   await mkdir(path.join(root,'test-results'),{recursive:true});
   await page.screenshot({path:path.join(root,'test-results','desktop.png'),fullPage:true});
