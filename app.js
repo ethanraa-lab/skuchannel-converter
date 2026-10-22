@@ -4,22 +4,22 @@ let workbook=null,result=null,templatePromise=null,busy=false,loadVersion=0;
 const converter=globalThis.SkuConverter;
 function message(text,error=false){$('message').textContent=text;$('message').className=error?'error':'';}
 function reset(){result=null;$('results').hidden=true;$('empty').hidden=false;$('download-all').disabled=true;message('');}
-function updateCode(){ $('channel-code').textContent=converter.CHANNELS[$('marketplace').value][$('brand').value]; }
-function updateBrands(){
-  const previous=$('brand').value;
-  $('brand').replaceChildren(...Object.keys(converter.CHANNELS[$('marketplace').value]).map(brand=>new Option(brand,brand)));
-  if (converter.CHANNELS[$('marketplace').value][previous]) $('brand').value=previous;
-  updateCode();reset();
+const channels=Object.entries(converter.CHANNELS).flatMap(([marketplace,brands])=>
+  Object.entries(brands).map(([brand,code])=>({marketplace,brand,code}))
+).sort((a,b)=>a.code.localeCompare(b.code));
+function selection(){
+  const channel=channels.find(item=>item.code===$('channel').value);
+  return {marketplace:channel.marketplace,brand:channel.brand,country:document.querySelector('input[name="country"]:checked').value};
 }
+function updateCode(){ $('channel-code').textContent=$('channel').value; }
 function setBusy(value){
   busy=value;
-  for(const id of ['marketplace','country','brand','file','sheet']) $(id).disabled=value;
+  for(const id of ['channel','country','file','sheet']) $(id).disabled=value;
   $('convert').disabled=value||!workbook;
   $('download-all').disabled=value||!result;
   document.querySelectorAll('.batch button').forEach(button=>button.disabled=value);
 }
-$('marketplace').addEventListener('change',updateBrands);
-for(const id of ['country','brand','sheet']) $(id).addEventListener('change',()=>{updateCode();reset();});
+for(const id of ['channel','country','sheet']) $(id).addEventListener('change',()=>{updateCode();reset();});
 $('file').addEventListener('change',async()=>{
   const version=++loadVersion;reset();workbook=null;$('sheet-container').hidden=true;$('convert').disabled=true;
   const file=$('file').files[0];$('file-name').textContent=file?.name||'No file selected';if(!file)return;
@@ -36,8 +36,8 @@ $('convert').addEventListener('click',async()=>{
   if(busy||!workbook)return;reset();setBusy(true);message('Converting records…');
   try{
     await new Promise(resolve=>setTimeout(resolve,0));
-    const selection={marketplace:$('marketplace').value,country:$('country').value,brand:$('brand').value};
-    result=converter.convert(await workbook.rows(Number($('sheet').value)),selection);render();message('Conversion complete. Review the preview before downloading.');
+    const selected=selection();
+    result=converter.convert(await workbook.rows(Number($('sheet').value)),selected);render();message('Conversion complete. Review the preview before downloading.');
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 });
 function render(){
@@ -80,4 +80,5 @@ $('download-all').addEventListener('click',async()=>{
     save(await zip.generateAsync({type:'uint8array',compression:'STORE'}),`SkuChannel_${marketplace}_${country}_${brand}.zip`,'application/zip');message('ZIP prepared. Check your browser downloads.');
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 });
-updateBrands();
+$('channel').replaceChildren(...channels.map(({marketplace,brand,code})=>new Option(`${code} - ${marketplace} ${brand}`,code)));
+updateCode();
