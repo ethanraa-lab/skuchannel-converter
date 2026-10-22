@@ -68,7 +68,7 @@ try{
   },template.toString('base64'));
   const output=await JSZip.loadAsync(Uint8Array.from(exported)), original=await JSZip.loadAsync(template);
   for(const [name,file] of Object.entries(original.files)){
-    if(file.dir||name==='xl/worksheets/sheet1.xml')continue;
+    if(file.dir||(name==='xl/worksheets/sheet1.xml'||name==='xl/sharedStrings.xml'))continue;
     assert.deepEqual(await output.file(name).async('uint8array'),await file.async('uint8array'),'preserved component '+name);
   }
   checks++;
@@ -76,7 +76,8 @@ try{
   const originalXml=await original.file('xl/worksheets/sheet1.xml').async('string');
   const headerRows=text=>text.match(/<row\b[^>]*r="[12]"[^>]*>[\s\S]*?<\/row>/g);
   check(JSON.stringify(headerRows(outXml))===JSON.stringify(headerRows(originalXml)),'exact headers');
-  check(!outXml.includes('<f>')&&outXml.includes('=VALUE&lt;&amp;&quot;'),'formula-like strings escaped as text');
+  const sharedXml=await output.file('xl/sharedStrings.xml').async('string');
+  check(!outXml.includes('<f>')&&sharedXml.includes('=VALUE&lt;&amp;&quot;'),'formula-like strings escaped as text');
   check(outXml.includes('A1:J3'),'dimension');
   const sampleDir=process.env.SAMPLE_DIR;
   if(sampleDir){
