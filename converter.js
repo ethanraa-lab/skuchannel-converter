@@ -86,7 +86,7 @@
     const header = rows.find(row => required.every(name => row.cells.some(cell=>normalize(cell?.text)===normalize(name))));
     if (!header) throw new Error(`Required columns not found: ${required.join(', ')}. Select the correct marketplace and worksheet.`);
     const index = {};
-    required.concat('Brand').forEach(name => {
+    required.concat('Brand','Product Name','Parent SKU').forEach(name => {
       const matches = header.cells.map((c,i)=>normalize(c?.text)===normalize(name)?i:-1).filter(i=>i>=0);
       if (matches.length>1) throw new Error('Duplicate column header: '+name);
       index[name] = matches[0] ?? -1;
@@ -95,6 +95,17 @@
     // Lazada bulk-edit exports have a metadata block: Optional/Mandatory, descriptions, rules.
     if (marketplace==='Lazada' && rows[start]?.cells.some(c=>['optional','mandatory'].includes(c?.text.trim().toLowerCase()))) {
       start += 3; skippedInstructions = 3;
+    }
+    // Shopee adds leading instructions in price/stock columns. Skip only rows
+    // with no product identity, before the first product record.
+    if (marketplace==='Shopee') {
+      const identityFields=['Product ID','Variation ID','SKU','Product Name','Parent SKU'];
+      while (start<rows.length && identityFields.every(name=>
+        index[name]===undefined || index[name]<0 || !rows[start].cells[index[name]]?.text.trim()
+      )) {
+        if (rows[start].cells.some(cell=>cell?.text.trim())) skippedInstructions++;
+        start++;
+      }
     }
     const records=[], issues=[];
     let blankSkus=0, emptyRows=0, duplicateMappings=0;
