@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>SkuChannel Converter</title><link rel="stylesheet" href="style.css">
+  <script src="vendor/jszip.min.js" defer></script><script src="converter.js" defer></script><script src="app.js" defer></script>
+</head>
+<body>
+<header><a class="wordmark" href="./">SKU<span>CHANNEL</span></a><span class="privacy">Files processed on this device</span></header>
+<main>
+  <div class="intro"><p class="eyebrow">MARKETPLACE OPERATIONS</p><h1>Export. Convert. Ready.</h1><p>Turn marketplace exports into the eRetail SkuChannel template.<br>Correct columns, channel codes, and file sizes—in one place.</p></div>
+  <div class="layout">
+    <section class="card setup" aria-labelledby="setup-title">
+      <div class="section-title"><span class="step">1</span><h2 id="setup-title">Choose your channel</h2></div>
+      <label for="marketplace">Marketplace</label><select id="marketplace"><option>Shopee</option><option>Lazada</option><option>Zalora</option></select>
+      <div class="pair"><div><label for="country">Country</label><select id="country"><option value="MY">Malaysia · MY</option><option value="SG">Singapore · SG</option></select></div><div><label for="brand">Brand</label><select id="brand"></select></div></div>
+      <div class="channel"><span>ChannelCode</span><strong id="channel-code"></strong></div>
+      <div class="section-title second"><span class="step">2</span><h2>Upload marketplace export</h2></div>
+      <label class="upload" for="file"><span class="upload-icon">↥</span><strong>Choose an Excel file</strong><span>.xlsx or .xls in modern Excel format · up to 30 MB</span><input id="file" type="file" accept=".xlsx,.xls"></label>
+      <p id="file-name" class="muted">No file selected</p>
+      <div id="sheet-container" hidden><label for="sheet">Worksheet</label><select id="sheet"></select></div>
+      <button id="convert" class="primary" disabled>Convert & preview</button>
+      <p class="footnote">No account or marketplace connection needed. Your product data is never uploaded.</p>
+    </section>
+    <section class="card result" aria-labelledby="result-title">
+      <div class="section-title"><span class="step">3</span><h2 id="result-title">Review & download</h2></div>
+      <div id="empty"><div class="empty-icon">▤</div><h3>Your import files will appear here</h3><p>Choose a channel and upload an export to begin.</p><div class="rules"><div><strong>5,198</strong><span>records per file</span></div><div><strong>2</strong><span>template header rows</span></div><div><strong>0</strong><span>for blank SKUs</span></div></div></div>
+      <div id="results" hidden>
+        <div class="stats"><div><strong id="record-count">0</strong><span>product records</span></div><div><strong id="batch-count">0</strong><span>import files</span></div><div><strong id="blank-count">0</strong><span>blank SKUs → 0</span></div></div>
+        <p id="summary" class="muted"></p><div id="warnings" role="status"></div>
+        <div class="table-wrap"><table><caption>First 20 converted records</caption><thead><tr><th>ChannelCode</th><th>eRetail SKU</th><th>Channel SKU</th><th>Channel Product Id</th><th>Status</th><th>Mode</th></tr></thead><tbody id="preview"></tbody></table></div>
+        <div id="batches" class="batches"></div><button id="download-all" class="primary" disabled>Download all as ZIP</button>
+      </div>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <aside class="details"><strong>Built around your template.</strong> Both header rows, original column order, formatting, and Sheet2 are retained. All records use Active / Create. Country appears in filenames only.</aside>
+</main><footer>SkuChannel Converter <span>Local processing · No analytics · No saved product data</span></footer>
+</body></html>
