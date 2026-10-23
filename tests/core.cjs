@@ -17,16 +17,16 @@ async function main(){
   check(sh.records[1][1]==='0'&&sh.records[1][2]==='0'&&sh.blankSkus===1,'blank SKU to zero');
   check(sh.records[0][0]==='M02'&&sh.records[0][8]==='Active'&&sh.records[0][9]==='Create','fixed values');
   check(sh.records[0].slice(4,8).every(v=>v===''),'optional fields blank');
-  const la=convert('Lazada','Vans',[['SellerSKU','Product ID'],['Optional','Optional'],['description','description'],['rules',''],['SKU123','123']]);
+  const la=convert('Lazada','Vans',[['SellerSKU','sku.skuId'],['Optional','Optional'],['description','description'],['rules',''],['SKU123','123']]);
   check(la.records.length===1&&la.skippedInstructions===3&&la.records[0][0]==='M06','Lazada metadata and code');
-  check(convert('Lazada','Columbia',[['Product ID','SellerSKU'],['123','ABC']]).records.length===1,'Lazada without metadata');
+  check(convert('Lazada','Columbia',[['sku.skuId','SellerSKU'],['123','ABC']]).records.length===1,'Lazada without metadata');
   const za=convert('Zalora','Timberland',[['CatalogProductId','SellerSku','Brand'],['123','ABC','Timberland']]);
   check(za.records[0][0]==='M16'&&za.records[0][3]==='123','Zalora mapping');
   const dup=convert('Shopee','Vans',[['Product ID','Variation ID','SKU'],['1','2','A'],['1','2','A'],['','','']]);
   check(dup.duplicateMappings===1&&dup.records.length===2&&dup.emptyRows===1,'duplicates kept; empty rows skipped');
   const failureCases=[
     ()=>convert('Shopee','Vans',[['SKU','Variation ID','Product ID'],['A','','123']]),
-    ()=>convert('Lazada','Vans',[['SellerSKU','Product ID'],['A','']]),
+    ()=>convert('Lazada','Vans',[['SellerSKU','sku.skuId'],['A','']]),
     ()=>convert('Lazada','Vans',[['wrong'],['data']]),
     ()=>convert('Zalora','Vans',[['CatalogProductId','SellerSku','Brand'],['1','A','Timberland']]),
     ()=>convert('Shopee','Vans',[['SKU','Variation ID','Product ID'],['A','x','1']]),
@@ -87,6 +87,9 @@ with zipfile.ZipFile(sys.argv[1]) as z:
    cells[idx-1]={'text':text,'type':typ,'formula':c.find('m:f',n)is not None}
   result.append({'number':int(r.get('r')),'cells':cells})
  print(json.dumps(result))`,filename],{encoding:'utf8'}));
+      if(market==='Lazada'&&!source.some(row=>row.cells.some(cell=>cell?.text==='sku.skuId'))){
+        assert.throws(()=>C.convert(source,{marketplace:market,brand,country:'MY'}),/sku.skuId/);checks++;continue;
+      }
       const result=C.convert(source,{marketplace:market,brand,country:'MY'});
       check(result.records.length===count,market+' sample count');check(result.blankSkus===blank,market+' sample blank SKU');
       if(market==='Shopee')check(result.records[0][3]==='42611267358~265946333448','actual Shopee identifier');
