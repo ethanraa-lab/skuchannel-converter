@@ -162,11 +162,16 @@
     if (!records.length) throw new Error(marketplace==='Lazada'?'No Active Lazada product records found. Check the source status column.':'No product records found below the headers.');
     return {records,blankSkus,duplicateMappings,emptyRows,skippedInstructions,excludedStatusRows,selection:{...selection},batches:Math.ceil(records.length/LIMIT)};
   }
+  function dateStamp(date=new Date()) {
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'2-digit',year:'2-digit'}).formatToParts(date);
+    const value=type=>parts.find(part=>part.type===type).value;
+    return value('day')+value('month')+value('year');
+  }
   function batches(result) {
     const {marketplace,country,brand}=result.selection;
     const files=[];
     for (let offset=0;offset<result.records.length;offset+=LIMIT) files.push({
-      name:`SkuChannel_${marketplace}_${country}_${brand}_Part${String(files.length+1).padStart(2,'0')}.xls`,
+      name:`SkuChannel_${marketplace}_${country}_${brand}_Part${String(files.length+1).padStart(2,'0')}_(${dateStamp()}).xls`,
       records:result.records.slice(offset,offset+LIMIT)
     });
     return files;
@@ -217,5 +222,5 @@
       .replace('</sst>',added.join('')+'</sst>'));
     return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
   }
-  root.SkuConverter={CHANNELS,HEADERS,LIMIT,openWorkbook,convert,batches,exportBatch};
+  root.SkuConverter={CHANNELS,HEADERS,LIMIT,openWorkbook,convert,batches,exportBatch,dateStamp};
 })(globalThis);
