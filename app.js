@@ -4,14 +4,24 @@ let uploads=[],result=null,templatePromise=null,busy=false;
 const converter=globalThis.SkuConverter;
 function message(text,error=false){$('message').textContent=text;$('message').className=error?'error':'';}
 function reset(){result=null;$('results').hidden=true;$('empty').hidden=false;$('download-all').disabled=true;message('');}
-const channels=Object.entries(converter.CHANNELS).flatMap(([marketplace,brands])=>
-  Object.entries(brands).map(([brand,code])=>({marketplace,brand,code}))
-).sort((a,b)=>a.code.localeCompare(b.code));
+let channels=[];
+function country(){return document.querySelector('input[name="country"]:checked').value;}
 function selection(){
-  const channel=channels.find(item=>item.code===$('channel').value);
-  return {marketplace:channel.marketplace,brand:channel.brand,country:document.querySelector('input[name="country"]:checked').value};
+  const channel=channels.find(item=>item.key===$('channel').value);
+  return {marketplace:channel.marketplace,brand:channel.brand,country:country()};
 }
-function updateCode(){ $('channel-code').textContent=$('channel').value; }
+function updateCode(){
+  $('channel-code').textContent=channels.find(item=>item.key===$('channel').value)?.code||'';
+}
+function updateChannels(){
+  const previous=$('channel').value;
+  channels=Object.entries(converter.CHANNELS[country()]).flatMap(([marketplace,brands])=>
+    Object.entries(brands).map(([brand,code])=>({marketplace,brand,code,key:marketplace+'|'+brand}))
+  ).sort((a,b)=>a.code.localeCompare(b.code));
+  $('channel').replaceChildren(...channels.map(({marketplace,brand,code,key})=>new Option(`${code} - ${marketplace} ${brand}`,key)));
+  if(channels.some(item=>item.key===previous))$('channel').value=previous;
+  updateCode();reset();
+}
 function setBusy(value){
   busy=value;
   for(const id of ['channel','country','file']) $(id).disabled=value;
@@ -19,7 +29,8 @@ function setBusy(value){
   $('download-all').disabled=value||!result;
   document.querySelectorAll('.batch button,.remove-file,.file-sheet').forEach(control=>control.disabled=value);
 }
-for(const id of ['channel','country']) $(id).addEventListener('change',()=>{updateCode();reset();});
+$('channel').addEventListener('change',()=>{updateCode();reset();});
+$('country').addEventListener('change',updateChannels);
 function renderUploads(){
   $('file-name').textContent=uploads.length ? uploads.length+' file(s) selected' : 'No file selected';
   $('file-list').replaceChildren(...uploads.map((item,index)=>{
@@ -125,5 +136,4 @@ $('download-all').addEventListener('click',async()=>{
     save(await zip.generateAsync({type:'uint8array',compression:'STORE'}),`SkuChannel_${marketplace}_${country}_${brand}.zip`,'application/zip');message('ZIP prepared. Check your browser downloads.');
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 });
-$('channel').replaceChildren(...channels.map(({marketplace,brand,code})=>new Option(`${code} - ${marketplace} ${brand}`,code)));
-updateCode();
+updateChannels();
