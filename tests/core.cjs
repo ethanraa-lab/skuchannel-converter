@@ -37,7 +37,7 @@ async function main(){
     const input=rows([['Product ID','Variation ID','SKU'],['1','2','ABC']]);input[1].cells[0]=cell;
     assert.throws(()=>C.convert(input,{marketplace:'Shopee',brand:'Vans',country:'MY'}));checks++;
   }
-  check(C.CHANNELS.Shopee.Columbia==='M01'&&C.CHANNELS.Lazada.Timberland==='M05'&&C.CHANNELS.Zalora.Vans==='M19','channel codes');
+  check(C.CHANNELS.MY.Shopee.Columbia==='M01'&&C.CHANNELS.MY.Lazada.Timberland==='M05'&&C.CHANNELS.MY.Zalora.Vans==='M19','channel codes');
   const template=fs.readFileSync(path.join(__dirname,'../template.xls'));
   const base=await JSZip.loadAsync(template);
   const baseSheet=await base.file('xl/worksheets/sheet1.xml').async('string');
