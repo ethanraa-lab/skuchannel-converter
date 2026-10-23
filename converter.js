@@ -82,7 +82,7 @@
     const {marketplace,brand,country} = selection;
     const channel = CHANNELS[marketplace]?.[brand];
     if (!channel || !['MY','SG'].includes(country)) throw new Error('Select a supported marketplace, country, and brand.');
-    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['Product ID','SellerSKU'] : ['CatalogProductId','SellerSku'];
+    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','SellerSKU'] : ['CatalogProductId','SellerSku'];
     const header = rows.find(row => required.every(name => row.cells.some(cell=>normalize(cell?.text)===normalize(name))));
     if (!header) throw new Error(`Required columns not found: ${required.join(', ')}. Select the correct marketplace and worksheet.`);
     const index = {};
