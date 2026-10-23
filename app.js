@@ -134,7 +134,7 @@ $('download-all').addEventListener('click',async()=>{
     const zip=new JSZip(),source=await template();const files=converter.batches(result);
     for(let i=0;i<files.length;i++){message(`Preparing file ${i+1} of ${files.length}…`);zip.file(files[i].name,await converter.exportBatch(source,files[i].records));}
     const {marketplace,country,brand}=result.selection;
-    save(await zip.generateAsync({type:'uint8array',compression:'STORE'}),`SkuChannel_${marketplace}_${country}_${brand}_(${converter.dateStamp()}).zip`,'application/zip');message('ZIP prepared. Check your browser downloads.');
+    save(await zip.generateAsync({type:'uint8array',compression:'STORE'}),`(${converter.dateStamp()})_${marketplace}_${country}_${brand}.zip`,'application/zip');message('ZIP prepared. Check your browser downloads.');
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 });
 updateChannels();
