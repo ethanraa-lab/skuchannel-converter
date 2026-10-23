@@ -94,7 +94,7 @@
     const {marketplace,brand,country} = selection;
     const channel = CHANNELS[country]?.[marketplace]?.[brand];
     if (!channel || !['MY','SG'].includes(country)) throw new Error('Select a supported marketplace, country, and brand.');
-    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','SellerSKU'] : ['CatalogProductId','SellerSku'];
+    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','status','SellerSKU'] : ['CatalogProductId','SellerSku'];
     const header = rows.find(row => required.every(name => row.cells.some(cell=>normalize(cell?.text)===normalize(name))));
     if (!header) throw new Error(`Required columns not found: ${required.join(', ')}. Select the correct marketplace and worksheet.`);
     const index = {};
@@ -120,10 +120,19 @@
       }
     }
     const records=[], issues=[];
-    let blankSkus=0, emptyRows=0, duplicateMappings=0;
+    let blankSkus=0, emptyRows=0, duplicateMappings=0, excludedStatusRows=0;
     const seen = new Set();
     for (const row of rows.slice(start)) {
       if (!row.cells.some(c=>c?.text.trim())) { emptyRows++; continue; }
+      if (marketplace==='Lazada') {
+        const statusCell=row.cells[index.status];
+        if (statusCell?.formula || statusCell?.type==='e') {
+          issues.push(`Row ${row.number}: status contains a formula or Excel error.`);continue;
+        }
+        if (String(statusCell?.text ?? '').trim().toLowerCase()!=='active') {
+          excludedStatusRows++;continue;
+        }
+      }
       const idField = required[0], skuField = required[required.length-1];
       const product = identifier(row.cells[index[idField]],row.number,idField,issues);
       let sku = identifier(row.cells[index[skuField]],row.number,skuField,issues);
@@ -150,8 +159,8 @@
       const error=new Error(`${issues.length} data issue(s). Fix these before export:\n${issues.slice(0,12).join('\n')}${issues.length>12?'\nAdditional issues omitted.':''}`);
       error.issues=issues; throw error;
     }
-    if (!records.length) throw new Error('No product records found below the headers.');
-    return {records,blankSkus,duplicateMappings,emptyRows,skippedInstructions,selection:{...selection},batches:Math.ceil(records.length/LIMIT)};
+    if (!records.length) throw new Error(marketplace==='Lazada'?'No Active Lazada product records found. Check the source status column.':'No product records found below the headers.');
+    return {records,blankSkus,duplicateMappings,emptyRows,skippedInstructions,excludedStatusRows,selection:{...selection},batches:Math.ceil(records.length/LIMIT)};
   }
   function batches(result) {
     const {marketplace,country,brand}=result.selection;
