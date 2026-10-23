@@ -171,7 +171,7 @@
     const {marketplace,country,brand}=result.selection;
     const files=[];
     for (let offset=0;offset<result.records.length;offset+=LIMIT) files.push({
-      name:`SkuChannel_${marketplace}_${country}_${brand}_Part${String(files.length+1).padStart(2,'0')}_(${dateStamp()}).xls`,
+      name:`(${dateStamp()})_${marketplace}_${country}_${brand}_Part${String(files.length+1).padStart(2,'0')}.xls`,
       records:result.records.slice(offset,offset+LIMIT)
     });
     return files;
