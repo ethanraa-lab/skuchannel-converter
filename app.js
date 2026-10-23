@@ -79,13 +79,13 @@ $('convert').addEventListener('click',async()=>{
   try{
     await new Promise(resolve=>setTimeout(resolve,0));
     const selected=selection();
-    const combined={records:[],blankSkus:0,duplicateMappings:0,emptyRows:0,skippedInstructions:0,selection:selected};
+    const combined={records:[],blankSkus:0,duplicateMappings:0,emptyRows:0,skippedInstructions:0,excludedStatusRows:0,selection:selected};
     const seen=new Set();
     for(const item of uploads){
       let converted;
       try{converted=converter.convert(await item.workbook.rows(item.sheet),selected);}
       catch(error){throw new Error(item.file.name+': '+error.message);}
-      for(const key of ['blankSkus','emptyRows','skippedInstructions'])combined[key]+=converted[key];
+      for(const key of ['blankSkus','emptyRows','skippedInstructions','excludedStatusRows'])combined[key]+=converted[key]||0;
       for(const record of converted.records){
         const key=JSON.stringify([record[1],record[3]]);
         if(seen.has(key))combined.duplicateMappings++;
@@ -102,6 +102,7 @@ function render(){
   $('summary').textContent=`${result.selection.marketplace} ${result.selection.country} · ${result.selection.brand} · ${result.skippedInstructions} instruction rows skipped · ${result.emptyRows} empty rows skipped`;
   $('warnings').replaceChildren();
   const warnings=[];
+  if(result.selection.marketplace==='Lazada')warnings.push(`${result.excludedStatusRows||0} non-Active Lazada row(s) excluded. Only Active products are included.`);
   if(result.blankSkus)warnings.push(`${result.blankSkus} blank SKU(s) were replaced with 0 in both SKU columns. Check these records before importing into eRetail.`);
   if(result.duplicateMappings)warnings.push(`${result.duplicateMappings} repeated SKU/product mapping(s) retained. No records were deduplicated.`);
   for(const text of warnings){const p=document.createElement('p');p.className='warning';p.textContent=text;$('warnings').append(p);}
