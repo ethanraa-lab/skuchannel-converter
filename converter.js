@@ -2,7 +2,19 @@
 (function (root) {
   'use strict';
   const NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-  const CHANNELS = {Shopee: {Columbia:'M01', Vans:'M02', Timberland:'M03'}, Lazada: {Columbia:'M04', Timberland:'M05', Vans:'M06'}, Zalora: {Timberland:'M16', Vans:'M19'}};
+  // Edit MY and SG independently. SG codes are copied placeholders for now.
+  const CHANNELS = {
+    MY: {
+      Shopee: {Columbia:'M01', Vans:'M02', Timberland:'M03'},
+      Lazada: {Columbia:'M04', Timberland:'M05', Vans:'M06'},
+      Zalora: {Timberland:'M16', Vans:'M19'}
+    },
+    SG: {
+      Shopee: {Columbia:'M01', Vans:'M02', Timberland:'M03'},
+      Lazada: {Columbia:'M04', Timberland:'M05', Vans:'M06'},
+      Zalora: {Timberland:'M16', Vans:'M19'}
+    }
+  };
   const HEADERS = ['ChannelCode','eRetail SKU','Channel SKU','Channel Product Id','Back Order Inventory','Channel Price','Buffer Stock','Picking Instructions','Status','Mode'];
   const LIMIT = 5198;
   const elements = (node, name) => Array.from(node.getElementsByTagNameNS(NS, name));
@@ -80,7 +92,7 @@
   }
   function convert(rows, selection) {
     const {marketplace,brand,country} = selection;
-    const channel = CHANNELS[marketplace]?.[brand];
+    const channel = CHANNELS[country]?.[marketplace]?.[brand];
     if (!channel || !['MY','SG'].includes(country)) throw new Error('Select a supported marketplace, country, and brand.');
     const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','SellerSKU'] : ['CatalogProductId','SellerSku'];
     const header = rows.find(row => required.every(name => row.cells.some(cell=>normalize(cell?.text)===normalize(name))));
