@@ -19,7 +19,7 @@ Choose marketplace, country, and brand, select the export workbook and worksheet
 | Marketplace | eRetail SKU and Channel SKU | Channel Product Id |
 |---|---|---|
 | Shopee | SKU | Product ID + `~` + Variation ID |
-| Lazada | SellerSKU | Product ID |
+| Lazada | SellerSKU | `sku.skuId` (including hidden columns) |
 | Zalora | SellerSku | CatalogProductId |
 
 | Marketplace | Columbia | Vans | Timberland |
