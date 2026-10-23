@@ -17,9 +17,9 @@ async function main(){
   check(sh.records[1][1]==='0'&&sh.records[1][2]==='0'&&sh.blankSkus===1,'blank SKU to zero');
   check(sh.records[0][0]==='M02'&&sh.records[0][8]==='Active'&&sh.records[0][9]==='Create','fixed values');
   check(sh.records[0].slice(4,8).every(v=>v===''),'optional fields blank');
-  const la=convert('Lazada','Vans',[['SellerSKU','sku.skuId'],['Optional','Optional'],['description','description'],['rules',''],['SKU123','123']]);
+  const la=convert('Lazada','Vans',[['SellerSKU','sku.skuId','status'],['Optional','Optional','Optional'],['description','description',''],['rules','',''],['SKU123','123','active']]);
   check(la.records.length===1&&la.skippedInstructions===3&&la.records[0][0]==='M06','Lazada metadata and code');
-  check(convert('Lazada','Columbia',[['sku.skuId','SellerSKU'],['123','ABC']]).records.length===1,'Lazada without metadata');
+  check(convert('Lazada','Columbia',[['sku.skuId','SellerSKU','status'],['123','ABC','active']]).records.length===1,'Lazada without metadata');
   const za=convert('Zalora','Timberland',[['CatalogProductId','SellerSku','Brand'],['123','ABC','Timberland']]);
   check(za.records[0][0]==='M16'&&za.records[0][3]==='123','Zalora mapping');
   const dup=convert('Shopee','Vans',[['Product ID','Variation ID','SKU'],['1','2','A'],['1','2','A'],['','','']]);
