@@ -92,7 +92,7 @@ try{
     }
   }
   const bytes=await fixture([['Product ID','Variation ID','SKU'],['123','456','001SKU'],['123','789','']]);
-  await page.selectOption('#channel','M02');
+  await page.selectOption('#channel','Shopee|Vans');
   await page.setInputFiles('#file',{name:'synthetic.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:bytes});
   await page.waitForFunction(()=>!document.getElementById('convert').disabled);
   await page.click('#convert');await page.waitForSelector('#results:not([hidden])');
