@@ -38,7 +38,7 @@ try{
     const rows=(data)=>data.map((r,i)=>({number:i+1,cells:r.map(text=>({text:String(text),type:'s',formula:false}))}));
     const run=(marketplace,brand,data)=>C.convert(rows(data),{marketplace,brand,country:'SG'});
     const sh=run('Shopee','Vans',[['SKU','Variation ID','Product ID'],['00123','00456','00789'],['','9','8']]);
-    const la=run('Lazada','Timberland',[['Product ID','extra','SellerSKU'],['Optional','','Optional'],['description'],['rules'],['123','','ABC']]);
+    const la=run('Lazada','Timberland',[['sku.skuId','extra','SellerSKU'],['Optional','','Optional'],['description'],['rules'],['123','','ABC']]);
     const za=run('Zalora','Timberland',[['CatalogProductId','SellerSku','Brand'],['123','ABC','Timberland']]);
     const failures=[];
     for(const [name,fn] of [
