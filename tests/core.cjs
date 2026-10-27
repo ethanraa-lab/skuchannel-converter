@@ -17,6 +17,19 @@ async function main(){
   check(sh.records[1][1]==='0'&&sh.records[1][2]==='0'&&sh.blankSkus===1,'blank SKU to zero');
   check(sh.records[0][0]==='M02'&&sh.records[0][8]==='Active'&&sh.records[0][9]==='Create','fixed values');
   check(sh.records[0].slice(4,8).every(v=>v===''),'optional fields blank');
+  const shopify=convert('Shopify','Vans',[
+    ['Variant SKU','Variant Inventory Item ID','Variant ID'],
+    ['001VANS','49278109745410','47163880833282'],
+    ['','002','001']
+  ]);
+  check(shopify.records[0][0]==='M23','Malaysia Shopify Vans channel');
+  check(shopify.records[0][1]==='001VANS'&&shopify.records[0][2]==='001VANS','Shopify SKU mapping');
+  check(shopify.records[0][3]==='47163880833282~49278109745410','Shopify combined identifiers');
+  check(shopify.records[1][3]==='001~002'&&shopify.records[1][1]==='0','Shopify text IDs and blank SKU');
+  assert.throws(()=>C.convert(rows([['Variant ID','Variant Inventory Item ID','Variant SKU'],['1','2','A']]),{marketplace:'Shopify',brand:'Vans',country:'SG'}));checks++;
+  assert.throws(()=>convert('Shopify','Vans',[['Variant ID','Variant Inventory Item ID','Variant SKU'],['1','','A']]),/missing Variant Inventory Item ID/);checks++;
+  assert.throws(()=>convert('Shopify','Vans',[['Variant ID','Variant SKU'],['1','A']]),/Required columns/);checks++;
+  assert.throws(()=>convert('Shopify','Vans',[['Variant ID','Variant Inventory Item ID','Variant SKU'],['1','abc','A']]),/digits only/);checks++;
   const la=convert('Lazada','Vans',[['SellerSKU','sku.skuId','status'],['Optional','Optional','Optional'],['description','description',''],['rules','',''],['SKU123','123','active']]);
   check(la.records.length===1&&la.skippedInstructions===3&&la.records[0][0]==='M06','Lazada metadata and code');
   check(convert('Lazada','Columbia',[['sku.skuId','SellerSKU','status'],['123','ABC','active']]).records.length===1,'Lazada without metadata');
