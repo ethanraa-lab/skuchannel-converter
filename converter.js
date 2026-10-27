@@ -7,7 +7,8 @@
     MY: {
       Shopee: {Columbia:'M01', Vans:'M02', Timberland:'M03'},
       Lazada: {Columbia:'M04', Timberland:'M05', Vans:'M06'},
-      Zalora: {Timberland:'M16', Vans:'M19'}
+      Zalora: {Timberland:'M16', Vans:'M19'},
+      Shopify: {Vans:'M23'}
     },
     SG: {
       Shopee: {Columbia:'M01', Timberland:'M02', Vans:'M03'},
@@ -94,7 +95,7 @@
     const {marketplace,brand,country} = selection;
     const channel = CHANNELS[country]?.[marketplace]?.[brand];
     if (!channel || !['MY','SG'].includes(country)) throw new Error('Select a supported marketplace, country, and brand.');
-    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','status','SellerSKU'] : ['CatalogProductId','SellerSku'];
+    const required = marketplace==='Shopee' ? ['Product ID','Variation ID','SKU'] : marketplace==='Lazada' ? ['sku.skuId','status','SellerSKU'] : marketplace==='Shopify' ? ['Variant ID','Variant Inventory Item ID','Variant SKU'] : ['CatalogProductId','SellerSku'];
     const header = rows.find(row => required.every(name => row.cells.some(cell=>normalize(cell?.text)===normalize(name))));
     if (!header) throw new Error(`Required columns not found: ${required.join(', ')}. Select the correct marketplace and worksheet.`);
     const index = {};
@@ -139,10 +140,11 @@
       if (!product) issues.push(`Row ${row.number}: missing ${idField}.`);
       if (!/^\d+$/.test(product) && product) issues.push(`Row ${row.number}: ${idField} must contain digits only.`);
       let productId = product;
-      if (marketplace==='Shopee') {
-        const variation = identifier(row.cells[index['Variation ID']],row.number,'Variation ID',issues);
-        if (!variation) issues.push(`Row ${row.number}: missing Variation ID. Enter the platform's value; it cannot be inferred.`);
-        else if (!/^\d+$/.test(variation)) issues.push(`Row ${row.number}: Variation ID must contain digits only.`);
+      if (marketplace==='Shopee' || marketplace==='Shopify') {
+        const variantField = marketplace==='Shopify' ? 'Variant Inventory Item ID' : 'Variation ID';
+        const variation = identifier(row.cells[index[variantField]],row.number,variantField,issues);
+        if (!variation) issues.push(`Row ${row.number}: missing ${variantField}. Enter the platform's value; it cannot be inferred.`);
+        else if (!/^\d+$/.test(variation)) issues.push(`Row ${row.number}: ${variantField} must contain digits only.`);
         productId += '~'+variation;
       }
       if (marketplace==='Zalora' && index.Brand>=0) {
