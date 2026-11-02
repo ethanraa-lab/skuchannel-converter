@@ -13,7 +13,8 @@
     SG: {
       Shopee: {Columbia:'M01', Timberland:'M02', Vans:'M03'},
       Lazada: {Columbia:'M04', Timberland:'M05', Vans:'M06'},
-      Zalora: {Vans:'M12', Timberland:'M14'}
+      Zalora: {Vans:'M12', Timberland:'M14'},
+      Shopify: {Vans:'M18'}
     }
   };
   const HEADERS = ['ChannelCode','eRetail SKU','Channel SKU','Channel Product Id','Back Order Inventory','Channel Price','Buffer Stock','Picking Instructions','Status','Mode'];
