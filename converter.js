@@ -126,6 +126,11 @@
     const seen = new Set();
     for (const row of rows.slice(start)) {
       if (!row.cells.some(c=>c?.text.trim())) { emptyRows++; continue; }
+      // Shopify exports may have image-only/product rows between variant rows.
+      if (marketplace==='Shopify' && required.every(name=>{
+        const cell=row.cells[index[name]];
+        return !cell?.text.trim() && !cell?.formula && cell?.type!=='e';
+      })) { emptyRows++; continue; }
       if (marketplace==='Lazada') {
         const statusCell=row.cells[index.status];
         if (statusCell?.formula || statusCell?.type==='e') {
